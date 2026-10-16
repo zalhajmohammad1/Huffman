@@ -1,45 +1,66 @@
-***How to use the program:***
- 
-The program starts with a prompt for if the user wants to compress or decompress
+# Huffman Encoder & Decoder
 
-a) if user wants to compress, they are asked to chose from which file path they want to compress, then are asked to chose
-the file path to store the compressed data in 
+A C++ file compression utility that implements the Huffman coding algorithm to shrink and restore text files. The program builds a custom binary tree based on character frequencies to generate variable-length prefix codes, saving storage space for repetitive text data.
 
-b) if the user wants to decompress, they are asked to choose the file source from where to decompress, then are asked for 
-the file to store the decompressed data in.
+## Features
 
+* **Interactive CLI:** A simple menu prompt that lets you choose between compression and decompression modes.
+* **Dynamic Huffman Tree Generation:** Counts character frequencies at runtime, builds a priority-queue-backed binary tree, and maps characters to optimized bitstrings.
+* **Self-Contained Storage Format:** The compressed file embeds its own frequency mapping table in a custom file header so it can be decompressed on any system without external dependencies.
 
-***How the program is implemented:***
+---
 
-*a) compression:*
+## How It Works
 
-Text data is processed from the file, then put into a string.
+### 1. Compression Pipeline
+* **File Reading:** Reads the raw input text file directly into a single string buffer.
+* **Frequency Mapping:** Analyzes the text to calculate the exact frequency weight of each character.
+* **Tree Building:** 
+  1. Spawns leaf nodes for each character and pushes them into a priority queue.
+  2. Pops the lowest-weight nodes sequentially to construct internal tree nodes.
+  3. Pushes internal nodes back into the queue until a single root Huffman Tree is formed.
+* **Code Assignment:** Traverses the tree paths (left/right) to generate unique binary strings for each character, saving them in an `unordered_map`.
+* **Serialization:** Writes the translation table as a file header into the destination file, followed immediately by the compressed bitstream data.
 
-based off the text data, a frequency table is created. The frequency table is then used to create base leaf nodes, with 
-the letters and weight, then they are all pushed in a priority queue. 
+### 2. Decompression Pipeline
+* **Header Parsing:** Reads the embedded translation metadata from the top of the compressed file into a code map.
+* **Tree Reconstruction:** Rebuilds the Huffman Tree from the root downward using the mapped bit sequences to re-establish the leaf nodes.
+* **Bitstream Decoding:** Streams the compressed data bit-by-bit, traversing the reconstructed tree to pull original characters and dump them directly into the output text file.
 
-From there the internal nodes are created from the base
-nodes from the priority queue. 
+---
 
-Internal nodes are pushed into the priority queue as well.
+## Operational Workflow
 
-The huffman tree is now created. 
+When you launch the executable, the program guides you through the following setup steps:
 
-After this the huffman tree is traversed left and right to compute the unique binary string for each character.
+```text
+[Main Menu] Choose an option:
+ 1. Compress a file
+ 2. Decompress a file
 
-This is all saved in an unordered map. 
+If 'Compress' is selected:
+  └─► Enter source file path (e.g., input.txt)
+  └─► Enter destination file path for compressed data (e.g., compressed.bin)
 
-After this table is stored into the storage object's header.
+If 'Decompress' is selected:
+  └─► Enter compressed source file path (e.g., compressed.bin)
+  └─► Enter destination file path for original text (e.g., restored.txt)
+```
 
-the compressed data is now saved in the user's desired file.
+---
 
+## Getting Started
 
-*b) decompression:*
+### Compilation
+Compile your program files using any standard C++ compiler with C++11 support or newer:
 
-Text data is processed from the file with the compressed data from the header in the storage object.
+```bash
+g++ -std=c++11 main.cpp Huffman.cpp -o huffman_utility
+```
 
-The data is then stored in a map. (each letter and its unique binary code).
+### Execution
+Run the compiled binary to start using the interface:
 
-A new huffman tree is built from the root, until it reaches the bottom and builds the leaf nodes with the english letters
-
-We then traverse the tree to grab all the english letters and store them into the user's desired file 
+```bash
+./huffman_utility
+```
